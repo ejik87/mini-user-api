@@ -1,0 +1,67 @@
+services:
+  api-db:
+    container_name: "golang-api-db"
+    image: postgres
+    restart: on-failure
+
+    volumes:
+#      - /usr/local/var/postgres:/var/lib/postgres/data/pgdata
+      - pg_go-api:/usr/local/var/postgres
+      # copy the sql script to create tables
+      # - ./sql.backup.sql:/docker-entrypoint-initdb.d/sql.backup.sql
+    env_file:
+      - .env
+    ports:
+      - 5437:5432
+    expose:
+      - 5432
+    networks:
+      - backend
+
+  redis-ka:
+    container_name: ${REDIS_HOST}
+    image: redis
+    restart: on-failure
+    env_file:
+      - .env
+    volumes:
+      - cache:/data
+    command: redis-server --save 20 1 --loglevel warning --requirepass ${REDIS_PASSWORD}
+    ports:
+      - ${REDIS_PORT}:${REDIS_PORT}
+    networks:
+      - backend
+
+  main-app:
+    container_name: "cool-app"
+    image: imageName
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    depends_on:
+      - api-db
+      - redis-ka
+    env_file:
+      - .env
+    volumes:
+      - .:/app
+    ports:
+    - 8000:8000
+    expose:
+      - 8000
+    networks:
+      - backend
+    links:
+      - "api-db:database"
+      - "redis-ka:redis-cache"
+
+    command: bash -c "go run main.go"
+
+volumes:
+  pg_go-api:
+  cache:
+    driver: local
+
+networks:
+  backend:
+    driver: bridge

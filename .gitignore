@@ -4,6 +4,11 @@
 *.dll
 *.so
 *.dylib
+.env
+.envrc
+.DS_Store
+.git
+
 
 # Test binary, built with `go test -c`
 *.test
