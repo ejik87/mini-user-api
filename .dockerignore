@@ -1,0 +1,10 @@
+README.md
+.gitignore
+.dockerignore
+config.php
+.env
+DS_Store
+.env.example
+.idea
+.git
+__pycache__
